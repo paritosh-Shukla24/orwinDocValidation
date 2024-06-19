@@ -1,0 +1,10 @@
+streamlit
+flask
+openai
+azure-ai-formrecognizer
+azure-core
+python-dotenv
+langchain
+langchain-google-genai
+langchain-groq
+langchain-openai
