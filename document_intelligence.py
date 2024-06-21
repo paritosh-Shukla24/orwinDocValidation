@@ -1,5 +1,7 @@
 from flask import Flask, render_template_string
 import os
+from langchain_huggingface import HuggingFaceEndpoint
+
 # from openai import AzureOpenAI
 from azure.ai.formrecognizer import DocumentAnalysisClient
 from azure.core.credentials import AzureKeyCredential
@@ -23,6 +25,7 @@ openai_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
 azure_openai_api_key = os.getenv("AZURE_OPENAI_API_KEY")
 google_gemini_api=os.getenv("google_api_key")
 groq_api_key=os.environ['groq_api_key']
+sec_key=os.environ["hf_tokens"]
 OPENAI_MODEL = 'gpt-3.5-turbo-0613'
 # client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 open_ai_key=os.environ["OPENAI_API_KEY"]
@@ -260,10 +263,11 @@ def extract_entities(text):
         Important Instructions:
 
         * Export_Authorisation_No MUST follow the pattern "P-EXP- followed by digits and a forward slash and more digits", for example, "P-EXP-12345/2023". 
-          It is usually found after the phrase 'Export Authorisation No .:' but If After Phrase It Should not be like this no F.No.XVI/4/5589/Tech/Psy/2020" then Keep 'Export Authorisation No .:' as Empty. 
+          It is usually found after the phrase 'Export Authorisation No .: but If After Phrase It Should not be like this no F.No.XVI/4/5589/Tech/Psy/2020"  
         * Exporter_Address is found after the phrase 'Exporter:' and continues until the next line break. 
           Do NOT include any part of the next entity and It should be in Format XYZ Ltd., Pagna uptown Bangalore- India else null. 
     """
+    # then Keep 'Export Authorisation No .:' as Empty.
     # system_message = f"""
     #     You are an expert in Natural Language Processing. Your task is to identify common Named Entities (NER) in a given text.
     #     Provide factual data only.
@@ -297,7 +301,13 @@ def extract_entities(text):
         [Text]: {text}
        """
     prompt1 = f"{system_message}\n{user_message}"
+    # llm = OpenAI(openai_api_key=open_ai_key,model="gpt-3.5-turbo-0613", temperature=0, max_tokens=120)
+    # repo_id="EleutherAI/gpt-neox-20b"
+    # llm=HuggingFaceEndpoint(repo_id=repo_id,max_length=128,temperature=0.7,token=sec_key)
+    # llm = GoogleGenerativeAI(api_key=google_gemini_api, model="gemini-pro")
     llm = ChatGroq(groq_api_key=groq_api_key, model_name="Llama3-70b-8192") 
+    # llm = ChatGroq(groq_api_key=groq_api_key, model_name="gemma-7b-it") 
+
     # llm=OpenAI(api_key=open_ai_key,model_name="gpt-4")
     prompt = PromptTemplate(template=prompt1, input_variables=["text"])
     chain = LLMChain(llm=llm, prompt=prompt)
